@@ -14,7 +14,7 @@ then
         file=$dataset_base\_rgb.tar
         filepath=http://downloads.cs.stanford.edu/downloads/taskonomy_data/rgb/$file
         echo $filepath
-	cd $dataset_base
+    cd $dataset_base
         if [ -d "rgb" ]
         then
            echo rgb exists
@@ -28,7 +28,7 @@ then
       done
    fi
    if [ "$dataset" = "class_scene" ] || [ "$search_space" = "all" ] || [ "$dataset" = "all" ]
-   then 
+   then
       for dataset_base in ${tnb_datasets[@]}
       do
        file=$dataset_base\_class_scene.tar
@@ -157,9 +157,9 @@ then
            then
              done="True"
            else
-	     echo "Waiting 30 seconds to try again..."
-	     sleep 30
-	   fi
+         echo "Waiting 30 seconds to try again..."
+         sleep 30
+       fi
          done
        done
 
