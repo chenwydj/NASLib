@@ -1,3 +1,9 @@
+```bash
+python naslib/runners/runner.py --config-file configs/correlation/jacov/nasbench201-9000/cifar10/config_9000.yaml
+python naslib/runners/benchmarks/runner.py --config-file configs/correlation/jacov/nasbench201-9000/cifar10/config_9000.yaml
+# start_idx ${SLURM_ARRAY_TASK_ID} n_models $N_MODELS
+```
+
 
 <h1  align="center" > ℕ𝔸𝕊-𝔹𝕖𝕟𝕔𝕙-𝕊𝕦𝕚𝕥𝕖-ℤ𝕖r𝕠:  </h1>
 
