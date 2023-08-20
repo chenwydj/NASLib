@@ -2,7 +2,7 @@ batch_size: 32
 config_type: correlation
 cutout: false
 cutout_length: 16
-cutout_prob: 1.0
+cutout_prob: 0
 dataset: cifar100
 out_dir: run
 predictor: linear_region
