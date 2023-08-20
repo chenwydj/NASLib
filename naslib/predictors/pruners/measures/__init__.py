@@ -66,6 +66,7 @@ def load_all():
     from . import nwot
     from . import linear_region
     from . import ntk_cond
+    from . import ntk_regression
 
 # TODO: should we do that by default?
 load_all()
