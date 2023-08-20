@@ -7,10 +7,11 @@ import torch.utils.data
 import torchvision.transforms as transforms
 
 from . import measure
+from ._ntk import get_ntk
 from pdb import set_trace as bp
 
 
-def get_ntk(network, inputs, targets, inputs_val=None, targets_val=None, train_mode=True, num_classes=100):
+def _get_ntk(network, inputs, targets, inputs_val=None, targets_val=None, train_mode=True, num_classes=100):
     device = torch.cuda.current_device()
     if train_mode:
         network.train()
