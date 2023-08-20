@@ -7,6 +7,7 @@ import torch.utils.data
 import torchvision.transforms as transforms
 
 from . import measure
+from pdb import set_trace as bp
 
 class LinearRegionCount(object):
     """Computes and stores the average and current value"""
@@ -69,10 +70,10 @@ class Linear_Region_Collector:
         self.model = model
         self.inputs = inputs  # BCHW
         self.interFeature = []
-        self.reinit(model, inputs)
         self.hook_handles = [] # store all hooks, remove once finished
         self.device = torch.cuda.current_device()
         self.LRCount = LinearRegionCount(len(inputs))
+        self.register_hook(self.model)
 
     def register_hook(self, model):
         for m in model.modules():
