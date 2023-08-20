@@ -109,8 +109,8 @@ class Linear_Region_Collector:
             LRCount.update2D(feature_data)
 
 
-@measure("lr", bn=True)
-def compute_nwot(net, inputs, targets, split_data=1, loss_fn=None):
+@measure("linear_region", bn=True)
+def compute_lr(net, inputs, targets, split_data=1, loss_fn=None):
 
     lr_collector = Linear_Region_Collector(net, inputs)
     try:
@@ -118,5 +118,5 @@ def compute_nwot(net, inputs, targets, split_data=1, loss_fn=None):
     except Exception as e:
         print(e)
         lr = np.nan
-   
+
     return lr
