@@ -77,6 +77,8 @@ def get_ntk_regression(network, inputs, targets, inputs_val, targets_val, train_
     targets_val = targets_val.cuda(device=device, non_blocking=True)
     targets_val_onehot = torch.nn.functional.one_hot(targets_val, num_classes=num_classes).float()
     targets_y_onehot_mean = targets_val_onehot - targets_val_onehot.mean(0)
+    if grads_y.sum() == 0 or grads_x.sum() == 0:
+        return np.nan
     try:
         _ntk_yx = torch.einsum('nc,mc->nm', [grads_y, grads_x])
         PY = torch.einsum('jk,kl,lm->jm', _ntk_yx, torch.inverse(ntk), targets_x_onehot_mean)
