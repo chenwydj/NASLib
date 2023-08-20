@@ -88,7 +88,7 @@ def _get_ntk(network, inputs, targets, inputs_val=None, targets_val=None, train_
 @measure("ntk_cond", bn=True)
 def compute_ntk_cond(net, inputs, targets, split_data=1, loss_fn=None):
     try:
-        ntk = get_ntk(net, inputs, targets, train_mode=True)
+        ntk = get_ntk(net, inputs, train_mode=True)
     except Exception as e:
         print("error:", e)
         bp()
