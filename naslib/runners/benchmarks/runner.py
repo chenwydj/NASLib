@@ -33,6 +33,7 @@ else:
 
 archs = load_sampled_architectures(config.search_space, postfix)
 end_index = config.start_idx + config.n_models if config.start_idx + config.n_models < len(archs) else len(archs)
+logger.info(f'Measure architectures from {config.start_idx} to {end_index}.')
 archs_to_evaluate = {idx: eval(archs[str(idx)]) for idx in range(config.start_idx, end_index)}
 
 utils.set_seed(config.seed)
