@@ -3,7 +3,7 @@ config_type: correlation
 cutout: false
 cutout_length: 16
 cutout_prob: 0
-dataset: cifar10
+dataset: cifar100
 out_dir: run
 predictor: ntk_cond
 search_space: nasbench201

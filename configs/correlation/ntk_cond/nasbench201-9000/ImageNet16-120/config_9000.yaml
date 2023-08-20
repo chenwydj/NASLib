@@ -2,8 +2,8 @@ batch_size: 64
 config_type: correlation
 cutout: false
 cutout_length: 16
-cutout_prob: 0
-dataset: cifar10
+cutout_prob: 0.0
+dataset: ImageNet16-120
 out_dir: run
 predictor: ntk_cond
 search_space: nasbench201
