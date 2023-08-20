@@ -112,12 +112,13 @@ class Linear_Region_Collector:
 
 @measure("linear_region", bn=True)
 def compute_lr(net, inputs, targets, split_data=1, loss_fn=None):
-
+    win_s = 4
+    B, C, H, W = inputs.shape
+    inputs = inputs.view(B, C, H//win_s, win_s, W//win_s, win_s).permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, C, win_s, win_s)
     lr_collector = Linear_Region_Collector(net, inputs)
     try:
         lr = lr_collector.forward_batch_sample()
     except Exception as e:
-        print(e)
         lr = np.nan
-
+    print(lr)
     return lr
