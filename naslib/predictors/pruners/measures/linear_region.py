@@ -73,17 +73,22 @@ class Linear_Region_Collector:
         self.hook_handles = [] # store all hooks, remove once finished
         self.device = torch.cuda.current_device()
         self.LRCount = LinearRegionCount(len(inputs))
+        self.total_n_relu = 6
+        self.max_channel = 1
         self.register_hook(self.model)
 
     def register_hook(self, model):
+        count_relu = 0
         for m in model.modules():
             if isinstance(m, nn.ReLU):
+                count_relu += 1
                 handle = m.register_forward_hook(hook=self.hook_in_forward)
                 self.hook_handles.append(handle)
+            if count_relu == self.total_n_relu: break
 
     def hook_in_forward(self, module, input, output):
         if isinstance(input, tuple) and len(input[0].size()) == 4:
-            self.interFeature.append(output.detach())  # for ReLU
+            self.interFeature.append(output.detach()[:, :self.max_channel])  # for ReLU
 
     def _initialize_weights(self):
         for model in self.models:
