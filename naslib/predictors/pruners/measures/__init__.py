@@ -63,6 +63,7 @@ def load_all():
     from . import l2_norm
     from . import nwot
     from . import linear_region
+    from . import ntk_cond
 
 # TODO: should we do that by default?
 load_all()
