@@ -5,7 +5,7 @@ cutout_length: 16
 cutout_prob: 1.0
 dataset: cifar100
 out_dir: run
-predictor: jacov
+predictor: linear_region
 search_space: nasbench201
 seed: 9000
 test_size: 1000

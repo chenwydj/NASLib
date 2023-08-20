@@ -47,6 +47,8 @@ def measure(name, bn=True, copy_net=True, force_clean=True, **impl_args):
 
 
 def calc_measure(name, net, device, *args, **kwargs):
+    # from pdb import set_trace as bp
+    # bp()
     return _measure_impls[name](net, device, *args, **kwargs)
 
 
