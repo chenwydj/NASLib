@@ -49,7 +49,8 @@ def get_ntk(network, inputs, train_mode=True):
     grads_x = get_samplewise_grad(network, inputs, train_mode=train_mode)
     ntk = torch.einsum('nc,mc->nm', [grads_x, grads_x])
     eigenvalues, _ = torch.linalg.eigh(ntk)  # ascending
-    cond_x = eigenvalues[-1] / eigenvalues[0]
+    # cond_x = eigenvalues[-1] / eigenvalues[0]
+    cond_x = eigenvalues[-1] / eigenvalues[1] # eigenvalues[0] could be negative
     if torch.isnan(cond_x):
         # cond_x = -1 # bad gradients
         cond_x = np.nan # bad gradients
