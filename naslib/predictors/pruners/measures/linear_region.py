@@ -4,7 +4,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.utils.data
-import torchvision.transforms as transforms
 
 from . import measure
 from pdb import set_trace as bp
