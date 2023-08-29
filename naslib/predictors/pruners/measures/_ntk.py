@@ -69,14 +69,20 @@ def get_ntk_regression(network, inputs, targets, inputs_val, targets_val, train_
     prediction_mse = None
 
     targets = targets.cuda(device=device, non_blocking=True)
-    targets_onehot = torch.nn.functional.one_hot(targets, num_classes=num_classes).float()
+    if len(targets.shape) == 1:
+        targets_onehot = torch.nn.functional.one_hot(targets, num_classes=num_classes).float()
+    else:
+        targets_onehot = targets.view(len(targets), -1).float()
     targets_x_onehot_mean = targets_onehot - targets_onehot.mean(0)
     grads_x = get_samplewise_grad(network, inputs, train_mode=train_mode)
     ntk = torch.einsum('nc,mc->nm', [grads_x, grads_x])
     # Val / Test set
     grads_y = get_samplewise_grad(network, inputs_val, train_mode=train_mode)
     targets_val = targets_val.cuda(device=device, non_blocking=True)
-    targets_val_onehot = torch.nn.functional.one_hot(targets_val, num_classes=num_classes).float()
+    if len(targets.shape) == 1:
+        targets_val_onehot = torch.nn.functional.one_hot(targets_val, num_classes=num_classes).float()
+    else:
+        targets_val_onehot = targets_val.view(len(targets_val), -1).float()
     targets_y_onehot_mean = targets_val_onehot - targets_val_onehot.mean(0)
     if grads_y.sum() == 0 or grads_x.sum() == 0:
         return np.nan

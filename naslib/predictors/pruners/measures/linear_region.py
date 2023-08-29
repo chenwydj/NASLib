@@ -35,7 +35,7 @@ class LinearRegionCount(object):
         # res = torch.einsum('nc,mc->nm', [self.activations, 1-self.activations])
         # res = torch.matmul(self.activations.half(), (1-self.activations).T.half())
         res = torch.matmul(self.activations, (1-self.activations).T)
-        res += res.T
+        res = res + res.T
         res = 1 - torch.sign(res)
         res = res.sum(1)
         res = 1. / res.float()
@@ -73,22 +73,46 @@ class Linear_Region_Collector:
         self.hook_handles = [] # store all hooks, remove once finished
         self.device = torch.cuda.current_device()
         self.LRCount = LinearRegionCount(len(inputs))
-        self.total_n_relu = 6
-        self.max_channel = 1
+        if 'micro' in str(type(model)).lower():
+            self.relu_range = range(1, 7)
+        elif 'macro' in str(type(model)).lower():
+            self.relu_range = range(1, 7)
+            # self.relu_range = range(self.count_num_relu(self.model))
+        elif '101' in str(type(model)).lower():
+            self.relu_range = range(1, 12)
+        elif '201' in str(type(model)).lower():
+            self.relu_range = range(1, 7)
+        elif '301' in str(type(model)).lower():
+            self.relu_range = range(1, 15)
+        else:
+            self.relu_range = range(self.count_num_relu(self.model))
+        # self.max_channel = int(round(math.log(len(inputs), 2) / len(self.relu_range))) # channels / feature_dim for final activations
+        self.max_channel = int(round(math.log(len(inputs), 2))) # channels / feature_dim for final activations
         self.register_hook(self.model)
+
+    def count_num_relu(self, model):
+        count_relu = 0
+        for m in model.modules():
+            if isinstance(m, nn.ReLU):
+                count_relu += 1
+        return count_relu
 
     def register_hook(self, model):
         count_relu = 0
         for m in model.modules():
             if isinstance(m, nn.ReLU):
+                if self.relu_range is None or count_relu in self.relu_range:
+                    handle = m.register_forward_hook(hook=self.hook_in_forward)
+                    self.hook_handles.append(handle)
                 count_relu += 1
-                handle = m.register_forward_hook(hook=self.hook_in_forward)
-                self.hook_handles.append(handle)
-            if count_relu == self.total_n_relu: break
 
     def hook_in_forward(self, module, input, output):
         if isinstance(input, tuple) and len(input[0].size()) == 4:
-            self.interFeature.append(output.detach()[:, :self.max_channel])  # for ReLU
+            self.interFeature.append(output.detach())  # for ReLU
+            # self.interFeature.append(output.detach()[:, :self.max_channel])  # for ReLU
+            # self.interFeature.append(output.detach().view(len(output), -1)[:, :self.max_channel])  # for ReLU
+        else:
+            print("hook_in_forward:", input[0].shape)
 
     def _initialize_weights(self):
         for model in self.models:
@@ -112,18 +136,26 @@ class Linear_Region_Collector:
             model.forward(input_data.cuda(device=self.device, non_blocking=True))
             if len(self.interFeature) == 0: return
             feature_data = torch.cat([f.view(input_data.size(0), -1) for f in self.interFeature], 1)
+            # feature_data = feature_data[:, torch.randperm(feature_data.size()[1])][:, :self.max_channel] # only consider max_channel feature dims
+            feature_data = torch.stack([f[torch.randperm(f.size()[0])][:self.max_channel] for f in feature_data], dim=0) # only consider max_channel feature dims
             LRCount.update2D(feature_data)
 
 
 @measure("linear_region", bn=True)
 def compute_lr(net, inputs, targets, split_data=1, loss_fn=None):
     win_s = 4
-    B, C, H, W = inputs.shape
-    inputs = inputs.view(B, C, H//win_s, win_s, W//win_s, win_s).permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, C, win_s, win_s)
+    if len(inputs.shape) == 5:
+        # 12, 9, 3, 64, 64
+        B, J, C, H, W = inputs.shape
+        inputs = inputs.view(B, J, C, H//win_s, win_s, W//win_s, win_s).permute(0, 3, 5, 1, 2, 4, 6).contiguous().view(-1, J, C, win_s, win_s)
+    else:
+        B, C, H, W = inputs.shape
+        inputs = inputs.view(B, C, H//win_s, win_s, W//win_s, win_s).permute(0, 2, 4, 1, 3, 5).contiguous().view(-1, C, win_s, win_s)
     lr_collector = Linear_Region_Collector(net, inputs)
     try:
         lr = lr_collector.forward_batch_sample()
     except Exception as e:
+        print(e)
         lr = np.nan
     print(lr)
     return lr
