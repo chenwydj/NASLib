@@ -72,21 +72,31 @@ class Linear_Region_Collector:
         self.hook_handles = [] # store all hooks, remove once finished
         self.device = torch.cuda.current_device()
         self.LRCount = LinearRegionCount(len(inputs))
+        self.MAX_CHANNEL = max(1, int(math.floor(math.log(len(inputs), 2))))
+        # TODO unsupported operand type(s) for -: 'int' and 'NoneType'
         if 'micro' in str(type(model)).lower():
-            self.relu_range = range(1, 7)
+            self.relu_range = range(1, list(self.model.__dict__['op_indices']).count(2) + list(self.model.__dict__['op_indices']).count(3)+1)
+            self.max_num_relu = 6
         elif 'macro' in str(type(model)).lower():
-            self.relu_range = range(1, 7)
+            self.relu_range = range(1, self.model.modules_str().count('ReLU'))
+            self.max_num_relu = 49
             # self.relu_range = range(self.count_num_relu(self.model))
         elif '101' in str(type(model)).lower():
-            self.relu_range = range(1, 12)
+            # self.relu_range = range(1, 10)
+            self.relu_range = range(1, ''.join(self.model.spec['ops']).count('relu')+1)
+            self.max_num_relu = 9
         elif '201' in str(type(model)).lower():
-            self.relu_range = range(1, 7)
+            self.relu_range = range(1, list(self.model.__dict__['op_indices']).count(2) + list(self.model.__dict__['op_indices']).count(3)+1)
+            self.max_num_relu = 6
         elif '301' in str(type(model)).lower():
-            self.relu_range = range(1, 15)
+            self.relu_range = range(1, self.model.modules_str()[self.model.modules_str().index("normal"):self.model.modules_str().index("reduction")].count("ReLU()")+1)
+            self.max_num_relu = 14
         else:
             self.relu_range = range(self.count_num_relu(self.model))
-        # self.max_channel = int(round(math.log(len(inputs), 2) / len(self.relu_range))) # channels / feature_dim for final activations
-        self.max_channel = int(round(math.log(len(inputs), 2))) # channels / feature_dim for final activations
+            self.max_num_relu = len(self.relu_range)
+        # self.max_channel = max(1, int(round(math.log(len(inputs), 2) / len(self.relu_range)))) # channels / feature_dim for final activations
+        self.max_channel = max(1, int(round(self.MAX_CHANNEL / self.max_num_relu * len(self.relu_range)))) # channels / feature_dim for final activations
+        # self.max_channel = int(round(math.log(len(inputs), 2))) # channels / feature_dim for final activations
         self.register_hook(self.model)
 
     def count_num_relu(self, model):
